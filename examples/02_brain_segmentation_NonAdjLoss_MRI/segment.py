@@ -1,5 +1,7 @@
 import argparse
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
 
 from architecture import ModSegNet
 from inference_canvas import InferenceCanvas
@@ -39,13 +41,15 @@ def infer_segmentation_map(model, data_loader, label_map):
 
     with torch.no_grad():
         for position, input in data_loader:
+            if(np.any(input[0,0,:,:].numpy())):
+                plt.imshow(input[0,0,:,:])
+                plt.show()
             output = model(input.cuda())
             _, predicted = output.data.max(1)
-
             # for each element of the batch
-            for i in range(0, predicted.size(0)):
-                y = position[i][1]
-                label_map[:, y - 3, :] = predicted[i].cpu().numpy()[1:-1, 1:-1]
+#            for i in range(0, predicted.size(0)):
+#                y = position[i][1]
+#                label_map[:, y - 3, :] = predicted[i].cpu().numpy()[1:-1, 1:-1]
 
     return probability_maps
 

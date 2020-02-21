@@ -77,10 +77,6 @@ def update_figures(log_plot):
                       'epoch', 'iou_metric', '#ff7f0e')
     log_plot.plot('average_iou.png', 'epoch', 'iou', max_y=1)
 
-    # plot nonadjloss
-    log_plot.add_line('nonadjloss', 'average_validation.csv',
-                      'epoch', 'nonadj_loss', '#ff7f0e')
-    log_plot.plot('average_nonadjloss.png', 'epoch', 'NonAdjLoss')
 
 
 def save_checkpoint(state, epoch, output_dir):
@@ -89,8 +85,8 @@ def save_checkpoint(state, epoch, output_dir):
     torch.save(state, filename)
 
     bestfile_f = open(bestfile, "a")
-    bestfile_f.write('epoch:{:>5d}  dice:{:>7.4f}  IoU:{:>7.4f}  NonAdjLoss:{:>7.4e}\n'.format(
-        state['epoch'], state['dice_metric'], state['iou_metric'], state['nonadjloss']))
+    bestfile_f.write('epoch:{:>5d}  dice:{:>7.4f}  IoU:{:>7.4f}\n'.format(
+        state['epoch'], state['dice_metric'], state['iou_metric']))
     bestfile_f.flush()
 
 
@@ -110,12 +106,12 @@ def find_best_model(model_path):
     # reference dice of first iteration without graph
     ref_dice = df.iloc[0]['dice_metric']
     best_dices = df[df['dice_metric'] >= (ref_dice - 0.005)]
-    best_epoch = best_dices.loc[best_dices['nonadj_loss'].idxmin()]
+    best_epoch = best_dices.loc[best_dices['dice_metric'].idxmin()]
     epoch_id = int(best_epoch['epoch'])
 
     log = open(os.path.join(model_path, 'log_best_graph.txt'), "w")
-    log.write('iteration: {}  dice: {:.4f}  nonAdjLoss: {:.4e}\n'
-              .format(epoch_id, best_epoch['dice_metric'], best_epoch['nonadj_loss']))
+    log.write('iteration: {}  dice: {:.4f}\n'
+              .format(epoch_id, best_epoch['dice_metric']))
     log.flush()
     shutil.copy(os.path.join(model_path, ('checkpoint_' + str(epoch_id) + '.pth.tar')),
                 os.path.join(model_path, 'model_best_dice.pth.tar'))
